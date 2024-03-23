@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 type tokenType uint8
 
@@ -71,7 +75,7 @@ func process(regex string, ctx *parseContext) {
 	case '?':
 		parseRepeat(regex, ctx)
 	case '{':
-		// parseRepeatSpecified(regex, ctx)
+		parseRepeatSpecified(regex, ctx)
 	default:
 		parseLiteral(regex, ctx)
 	}
@@ -166,6 +170,57 @@ func parseRepeat(regex string, ctx *parseContext) {
 	case '?':
 		min = 0
 		max = 1
+	}
+
+	lastToken := ctx.tokens[len(ctx.tokens)-1]
+	ctx.tokens[len(ctx.tokens)-1] = token{
+		tokenType: repeat,
+		value: repeatPayload{
+			min:   min,
+			max:   max,
+			token: lastToken,
+		},
+	}
+}
+
+func parseRepeatSpecified(regex string, ctx *parseContext) {
+	start := regex[ctx.pos+1]
+	for regex[ctx.pos] != '}' {
+		ctx.pos++
+	}
+
+	specifiedStr := regex[start:ctx.pos]
+	limits := strings.Split(specifiedStr, ",")
+	if len(limits) > 2 {
+		panic("repeat specified should have at most 2 limits")
+	}
+
+	var min, max int
+	if len(limits) == 1 {
+		value, err := strconv.Atoi(limits[0])
+		if err != nil {
+			panic(err.Error())
+		}
+		min = value
+		max = value
+	}
+
+	if len(limits) == 2 {
+		firstLimit, err := strconv.Atoi(limits[0])
+		if err != nil {
+			panic(err.Error())
+		}
+		min = firstLimit
+
+		if limits[1] == "" {
+			max = repeatInfinity
+		} else {
+			secondLimit, err := strconv.Atoi(limits[1])
+			if err != nil {
+				panic(err.Error())
+			}
+			max = secondLimit
+		}
 	}
 
 	lastToken := ctx.tokens[len(ctx.tokens)-1]
