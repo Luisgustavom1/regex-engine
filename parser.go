@@ -18,6 +18,14 @@ type token struct {
 	value     interface{}
 }
 
+type repeatPayload struct {
+	min   int
+	max   int
+	token token
+}
+
+const repeatInfinity = -1
+
 type parseContext struct {
 	pos    int
 	tokens []token
@@ -61,7 +69,7 @@ func process(regex string, ctx *parseContext) {
 	case '*':
 	case '+':
 	case '?':
-		// parseRepeat(regex, ctx)
+		parseRepeat(regex, ctx)
 	case '{':
 		// parseRepeatSpecified(regex, ctx)
 	default:
@@ -108,6 +116,7 @@ func parseBracket(regex string, ctx *parseContext) {
 }
 
 func parseOr(regex string, ctx *parseContext) {
+	// right hand side
 	rhsCtx := &parseContext{
 		pos:    ctx.pos + 1,
 		tokens: []token{},
@@ -141,4 +150,31 @@ func parseLiteral(regex string, ctx *parseContext) {
 		value:     regex[ctx.pos],
 	}
 	ctx.tokens = append(ctx.tokens, t)
+}
+
+func parseRepeat(regex string, ctx *parseContext) {
+	ch := regex[ctx.pos]
+	var min, max int
+
+	switch ch {
+	case '*':
+		min = 0
+		max = repeatInfinity
+	case '+':
+		min = 1
+		max = repeatInfinity
+	case '?':
+		min = 0
+		max = 1
+	}
+
+	lastToken := ctx.tokens[len(ctx.tokens)-1]
+	ctx.tokens[len(ctx.tokens)-1] = token{
+		tokenType: repeat,
+		value: repeatPayload{
+			min:   min,
+			max:   max,
+			token: lastToken,
+		},
+	}
 }
