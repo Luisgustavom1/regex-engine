@@ -20,3 +20,57 @@ type parseContext struct {
 	pos    int
 	tokens []token
 }
+
+func parse(regex string) *parseContext {
+	ctx := &parseContext{
+		pos:    0,
+		tokens: []token{},
+	}
+
+	for ctx.pos < len(regex) {
+		process(regex, ctx)
+		ctx.pos++
+	}
+
+	return ctx
+}
+
+func process(regex string, ctx *parseContext) {
+	ch := regex[ctx.pos]
+
+	switch ch {
+	case '(':
+		groupCtx := &parseContext{
+			pos:    ctx.pos,
+			tokens: []token{},
+		}
+		parseGroup(regex, groupCtx)
+		ctx.tokens = append(
+			ctx.tokens,
+			token{
+				tokenType: group,
+				value:     groupCtx.tokens,
+			},
+		)
+	case '[':
+		// parseBracket(regex, ctx)
+	case '|':
+		// parseOr(regex, ctx)
+	case '*':
+	case '+':
+	case '?':
+		// parseRepeat(regex, ctx)
+	case '{':
+		// parseRepeatSpecified(regex, ctx)
+	default:
+		// parseLiteral(regex, ctx)
+	}
+}
+
+func parseGroup(regex string, ctx *parseContext) {
+	ctx.pos++
+	for regex[ctx.pos] != ')' {
+		process(regex, ctx)
+		ctx.pos++
+	}
+}
