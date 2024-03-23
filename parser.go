@@ -57,7 +57,7 @@ func process(regex string, ctx *parseContext) {
 	case '[':
 		parseBracket(regex, ctx)
 	case '|':
-		// parseOr(regex, ctx)
+		parseOr(regex, ctx)
 	case '*':
 	case '+':
 	case '?':
@@ -105,6 +105,34 @@ func parseBracket(regex string, ctx *parseContext) {
 		tokenType: bracket,
 		value:     literalsSet,
 	})
+}
+
+func parseOr(regex string, ctx *parseContext) {
+	rhsCtx := &parseContext{
+		pos:    ctx.pos + 1,
+		tokens: []token{},
+	}
+
+	for rhsCtx.pos < len(regex) && regex[rhsCtx.pos] != ')' {
+		process(regex, rhsCtx)
+		rhsCtx.pos++
+	}
+
+	left := token{
+		tokenType: groupUncaptured,
+		value:     ctx.tokens,
+	}
+
+	right := token{
+		tokenType: groupUncaptured,
+		value:     rhsCtx.tokens,
+	}
+
+	ctx.pos = rhsCtx.pos
+	ctx.tokens = []token{{
+		tokenType: or,
+		value:     []token{left, right},
+	}}
 }
 
 func parseLiteral(regex string, ctx *parseContext) {
