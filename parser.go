@@ -65,7 +65,7 @@ func process(regex string, ctx *parseContext) {
 	case '{':
 		// parseRepeatSpecified(regex, ctx)
 	default:
-		// parseLiteral(regex, ctx)
+		parseLiteral(regex, ctx)
 	}
 }
 
@@ -105,4 +105,12 @@ func parseBracket(regex string, ctx *parseContext) {
 		tokenType: bracket,
 		value:     literalsSet,
 	})
+}
+
+func parseLiteral(regex string, ctx *parseContext) {
+	t := token{
+		tokenType: literal,
+		value:     regex[ctx.pos],
+	}
+	ctx.tokens = append(ctx.tokens, t)
 }
