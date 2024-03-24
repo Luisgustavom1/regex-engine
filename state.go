@@ -72,15 +72,14 @@ func tokenToNfa(t token) (start *state, end *state) {
 		}
 	case group, groupUncaptured:
 		tokens := t.value.([]token)
-		tStart, tEnd := tokenToNfa(tokens[0])
-		for _, t := range tokens {
+		sStart, tEnd := tokenToNfa(tokens[0])
+		for _, t := range tokens[1:] {
 			startNext, endNext := tokenToNfa(t)
-			// TODO: verify if should be a append
 			tEnd.transitions[epsilonChar] = append(tEnd.transitions[epsilonChar], startNext)
 			tEnd = endNext
 		}
 		// TODO: verify this
-		start.transitions[epsilonChar] = []*state{tStart}
+		start.transitions[epsilonChar] = []*state{sStart}
 	case repeat:
 		payload := t.value.(repeatPayload)
 
@@ -106,7 +105,7 @@ func tokenToNfa(t token) (start *state, end *state) {
 			to = e
 
 			if i > payload.min {
-				end.transitions[epsilonChar] = append(end.transitions[epsilonChar], e)
+				s.transitions[epsilonChar] = append(s.transitions[epsilonChar], end)
 			}
 		}
 
