@@ -52,8 +52,7 @@ func parse(regex string) *parseContext {
 func process(regex string, ctx *parseContext) {
 	ch := regex[ctx.pos]
 
-	switch ch {
-	case '(':
+	if ch == '(' {
 		groupCtx := &parseContext{
 			pos:    ctx.pos,
 			tokens: []token{},
@@ -66,17 +65,15 @@ func process(regex string, ctx *parseContext) {
 				value:     groupCtx.tokens,
 			},
 		)
-	case '[':
+	} else if ch == '[' {
 		parseBracket(regex, ctx)
-	case '|':
+	} else if ch == '|' {
 		parseOr(regex, ctx)
-	case '*':
-	case '+':
-	case '?':
+	} else if ch == '*' || ch == '+' || ch == '?' {
 		parseRepeat(regex, ctx)
-	case '{':
+	} else if ch == '{' {
 		parseRepeatSpecified(regex, ctx)
-	default:
+	} else {
 		parseLiteral(regex, ctx)
 	}
 }
