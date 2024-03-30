@@ -8,13 +8,16 @@ type state struct {
 
 type stateTransition = map[uint8][]*state
 
-const epsilonChar uint8 = 0 // empty character
+const (
+	epsilonChar uint8 = 0 // empty character
+	startOfText uint8 = 1
+	endOfText   uint8 = 2
+)
 
 func toNfa(ctx *parseContext) *state {
-	s := &state{
+	startState, endState := tokenToNfa(&ctx.tokens[0], &state{
 		transitions: map[uint8][]*state{},
-	}
-	startState, endState := tokenToNfa(&ctx.tokens[0], s)
+	})
 
 	for _, t := range ctx.tokens[1:] {
 		_, endNext := tokenToNfa(&t, endState)
@@ -76,6 +79,15 @@ func tokenToNfa(t *token, start *state) (*state, *state) {
 		return start, end
 	case group, groupUncaptured:
 		tokens := t.value.([]token)
+
+		if len(tokens) == 0 {
+			end := &state{
+				transitions: stateTransition{},
+			}
+			start.transitions[epsilonChar] = append(start.transitions[epsilonChar], end)
+			return start, end
+		}
+
 		tStart, tEnd := tokenToNfa(&tokens[0], start)
 		for _, t := range tokens[1:] {
 			_, endNext := tokenToNfa(&t, tEnd)
@@ -89,6 +101,7 @@ func tokenToNfa(t *token, start *state) (*state, *state) {
 		end := &state{
 			transitions: stateTransition{},
 		}
+
 		if payload.min == 0 {
 			start.transitions[epsilonChar] = append(start.transitions[epsilonChar], end)
 		}
@@ -102,10 +115,12 @@ func tokenToNfa(t *token, start *state) (*state, *state) {
 			}
 		}
 
-		from, to := tokenToNfa(&payload.token, start)
+		from, to := tokenToNfa(&payload.token, &state{
+			transitions: map[uint8][]*state{},
+		})
 		start.transitions[epsilonChar] = append(start.transitions[epsilonChar], from)
 
-		for i := 2; i < maxCopy; i++ {
+		for i := 2; i <= maxCopy; i++ {
 			tmpStart := &state{
 				transitions: map[uint8][]*state{},
 			}
