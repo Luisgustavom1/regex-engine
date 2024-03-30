@@ -6,7 +6,6 @@ import (
 )
 
 func TestNfa(t *testing.T) {
-
 	var data = []struct {
 		email    string
 		validity bool

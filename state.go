@@ -11,10 +11,10 @@ type stateTransition = map[uint8][]*state
 const epsilonChar uint8 = 0 // empty character
 
 func toNfa(ctx *parseContext) *state {
-	startState, endState := tokenToNfa(ctx.tokens[0])
+	startState, endState := tokenToNfa(&ctx.tokens[0])
 
 	for _, t := range ctx.tokens[1:] {
-		startNext, endNext := tokenToNfa(t)
+		startNext, endNext := tokenToNfa(&t)
 		endState.transitions[epsilonChar] = append(
 			endState.transitions[epsilonChar],
 			startNext,
@@ -42,7 +42,7 @@ func toNfa(ctx *parseContext) *state {
 	return start
 }
 
-func tokenToNfa(t token) (start *state, end *state) {
+func tokenToNfa(t *token) (start *state, end *state) {
 	start = &state{
 		transitions: stateTransition{},
 	}
@@ -59,8 +59,8 @@ func tokenToNfa(t token) (start *state, end *state) {
 		left := values[0]
 		right := values[1]
 
-		startLeft, endLeft := tokenToNfa(left)
-		startRight, endRight := tokenToNfa(right)
+		startLeft, endLeft := tokenToNfa(&left)
+		startRight, endRight := tokenToNfa(&right)
 
 		start.transitions[epsilonChar] = []*state{startLeft, startRight}
 		endLeft.transitions[epsilonChar] = []*state{end}
@@ -72,9 +72,9 @@ func tokenToNfa(t token) (start *state, end *state) {
 		}
 	case group, groupUncaptured:
 		tokens := t.value.([]token)
-		sStart, tEnd := tokenToNfa(tokens[0])
+		sStart, tEnd := tokenToNfa(&tokens[0])
 		for _, t := range tokens[1:] {
-			startNext, endNext := tokenToNfa(t)
+			startNext, endNext := tokenToNfa(&t)
 			tEnd.transitions[epsilonChar] = append(tEnd.transitions[epsilonChar], startNext)
 			tEnd = endNext
 		}
@@ -83,7 +83,7 @@ func tokenToNfa(t token) (start *state, end *state) {
 	case repeat:
 		payload := t.value.(repeatPayload)
 
-		from, to := tokenToNfa(payload.token)
+		from, to := tokenToNfa(&payload.token)
 		start.transitions[epsilonChar] = append(start.transitions[epsilonChar], from)
 
 		if payload.min == 0 {
@@ -97,7 +97,7 @@ func tokenToNfa(t token) (start *state, end *state) {
 		}
 
 		for i := 2; i < maxCopy; i++ {
-			s, e := tokenToNfa(payload.token)
+			s, e := tokenToNfa(&payload.token)
 
 			to.transitions[epsilonChar] = append(to.transitions[epsilonChar], s)
 
