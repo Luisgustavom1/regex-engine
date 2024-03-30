@@ -184,7 +184,7 @@ func parseRepeat(regex string, ctx *parseContext) {
 }
 
 func parseRepeatSpecified(regex string, ctx *parseContext) {
-	start := regex[ctx.pos+1]
+	start := ctx.pos + 1
 	for regex[ctx.pos] != '}' {
 		ctx.pos++
 	}
