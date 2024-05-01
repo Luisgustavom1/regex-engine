@@ -1,5 +1,7 @@
 package parser
 
+import "github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/ds"
+
 type Operators byte
 
 const (
@@ -60,23 +62,9 @@ func InsertConcatOperator(exp string) string {
 	return expParsed
 }
 
-func pop(list *[]Operators) Operators {
-	l := len(*list)
-	last := (*list)[l-1]
-	*list = (*list)[:l-1]
-	return last
-}
-
-func peek(list []Operators) Operators {
-	if len(list) == 0 {
-		return 0
-	}
-	return list[len(list)-1]
-}
-
 func ShuntingYardExp(exp string) string {
 	result := ""
-	operators := make([]Operators, 0)
+	operators := ds.NewStack[Operators]()
 
 	for i := 0; i < len(exp); i++ {
 		c := exp[i]
@@ -84,32 +72,32 @@ func ShuntingYardExp(exp string) string {
 
 		if co == LEFT_PAREN || co == RIGHT_PAREN {
 			if co == RIGHT_PAREN {
-				for peek(operators) != LEFT_PAREN {
-					result += string(pop(&operators))
+				for operators.Peek() != LEFT_PAREN {
+					result += string(operators.Pop())
 				}
 				// to remove )
-				pop(&operators)
+				operators.Pop()
 				continue
 			}
 
-			operators = append(operators, co)
+			operators.Push(co)
 			continue
 		}
 
 		if isSomeOperator(c) {
-			for len(operators) > 0 && symbolPrecedence[co] <= symbolPrecedence[peek(operators)] && peek(operators) != LEFT_PAREN {
-				result += string(pop(&operators))
+			for operators.Len() > 0 && symbolPrecedence[co] <= symbolPrecedence[operators.Peek()] && operators.Peek() != LEFT_PAREN {
+				result += string(operators.Pop())
 			}
 
-			operators = append(operators, co)
+			operators.Push(co)
 			continue
 		}
 
 		result += string(c)
 	}
 
-	for (len(operators)) > 0 {
-		result += string(pop(&operators))
+	for (len(operators.Values())) > 0 {
+		result += string(operators.Pop())
 	}
 
 	return result
