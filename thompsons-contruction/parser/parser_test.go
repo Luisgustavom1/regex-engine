@@ -49,3 +49,57 @@ func TestInsertConcatOperator(t *testing.T) {
 		})
 	}
 }
+
+func TestShutingYardExp(t *testing.T) {
+	tests := []struct {
+		Input string
+		Want  string
+	}{
+		{
+			Input: "3+4",
+			Want:  "34+",
+		},
+		{
+			Input: "a.b.c",
+			Want:  "ab.c.",
+		},
+		{
+			Input: "(a|b).c",
+			Want:  "ab|c.",
+		},
+		{
+			Input: "(a|b*c).c",
+			Want:  "abc*|c.",
+		},
+		{
+			Input: "(c*a|b).c",
+			Want:  "ca*b|c.",
+		},
+		{
+			Input: "(a|b|c)?c.c",
+			Want:  "ab|c|c?c.",
+		},
+		{
+			Input: "(a|b|c)+c.c",
+			Want:  "ab|c|c+c.",
+		},
+		{
+			Input: "(a|b+c)*c.c",
+			Want:  "abc+|c*c.",
+		},
+		{
+			Input: "(a|(b*c|d)*e)+c.c",
+			Want:  "abc*d|e*|c+c.",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.Input, func(t *testing.T) {
+			t.Parallel()
+			r := parser.ShuntingYardExp(tc.Input)
+			if r != tc.Want {
+				t.Fatalf("want %s, got %s", tc.Want, r)
+			}
+		})
+	}
+}
