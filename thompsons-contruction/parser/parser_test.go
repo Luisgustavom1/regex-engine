@@ -13,9 +13,29 @@ func TestInsertConcatOperator(t *testing.T) {
 		Want  string
 	}{
 		{
+			Name:  "a",
+			Input: "a",
+			Want:  "a",
+		},
+		{
 			Name:  "abc",
 			Input: "abc",
 			Want:  "a.b.c",
+		},
+		{
+			Name:  "(a|b)c",
+			Input: "(a|b)c",
+			Want:  "(a|b).c",
+		},
+		{
+			Name:  "(a|b|c)?cc",
+			Input: "(a|b|c)?cc",
+			Want:  "(a|b|c)?c.c",
+		},
+		{
+			Name:  "(a|b|c)+cc",
+			Input: "(a|b|c)+cc",
+			Want:  "(a|b|c)+c.c",
 		},
 	}
 
