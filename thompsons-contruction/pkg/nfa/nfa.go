@@ -55,7 +55,7 @@ func FromSymbol(symbol byte) Nfa {
 	return NewNfa(start, end)
 }
 
-func concat(first *Nfa, second *Nfa) Nfa {
+func concat(first Nfa, second Nfa) Nfa {
 	addEpsilonTransition(first.End, second.Start)
 	first.End.IsEnd = false
 
@@ -81,12 +81,12 @@ func closure(nfa Nfa) Nfa {
 	s := NewState(false)
 	e := NewState(true)
 
+	addEpsilonTransition(s, e)
+	addEpsilonTransition(s, nfa.Start)
+
 	addEpsilonTransition(nfa.End, e)
 	addEpsilonTransition(nfa.End, nfa.Start)
 	nfa.End.IsEnd = false
-
-	addEpsilonTransition(s, e)
-	addEpsilonTransition(s, nfa.Start)
 
 	return NewNfa(s, e)
 }
@@ -100,16 +100,16 @@ func ToNfa(postfixExp string) Nfa {
 
 	for _, c := range postfixExp {
 		if parser.Operators(c) == parser.UNION {
-			s := stack.Pop()
-			e := stack.Pop()
-			stack.Push(union(s, e))
+			right := stack.Pop()
+			left := stack.Pop()
+			stack.Push(union(left, right))
 		} else if parser.Operators(c) == parser.CLOSURE {
 			nfa := stack.Pop()
 			stack.Push(closure(nfa))
 		} else if parser.Operators(c) == parser.CONCAT {
-			s := stack.Pop()
-			e := stack.Pop()
-			stack.Push(union(s, e))
+			right := stack.Pop()
+			left := stack.Pop()
+			stack.Push(concat(left, right))
 		} else {
 			stack.Push(FromSymbol(byte(c)))
 		}

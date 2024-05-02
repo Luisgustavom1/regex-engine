@@ -14,11 +14,16 @@ func TestSearch(t *testing.T) {
 		world string
 		want  bool
 	}{
-		// {
-		// 	regex: "a*b",
-		// 	world: "lkdlk",
-		// 	want:  false,
-		// },
+		{
+			regex: "a*b",
+			world: "",
+			want:  false,
+		},
+		{
+			regex: "a*b",
+			world: "lkdlk",
+			want:  false,
+		},
 		{
 			regex: "a*b",
 			world: "ab",
