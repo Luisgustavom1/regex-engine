@@ -29,6 +29,11 @@ func TestSearch(t *testing.T) {
 			world: "ab",
 			want:  true,
 		},
+		{
+			regex: "a*b",
+			world: "aaaaaab",
+			want:  true,
+		},
 	}
 
 	for _, tc := range testCases {
