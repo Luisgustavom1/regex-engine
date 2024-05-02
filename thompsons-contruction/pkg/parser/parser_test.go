@@ -3,7 +3,7 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/Luisgustavom1/regex-engine/thompsons-construction/parser"
+	"github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/parser"
 )
 
 func TestInsertConcatOperator(t *testing.T) {
@@ -21,6 +21,11 @@ func TestInsertConcatOperator(t *testing.T) {
 			Name:  "abc",
 			Input: "abc",
 			Want:  "a.b.c",
+		},
+		{
+			Name:  "a*b",
+			Input: "a*b",
+			Want:  "a*.b",
 		},
 		{
 			Name:  "(a|b)c",
@@ -60,6 +65,10 @@ func TestShutingYardExp(t *testing.T) {
 			Want:  "34+",
 		},
 		{
+			Input: "a*b",
+			Want:  "ab*",
+		},
+		{
 			Input: "a.b.c",
 			Want:  "ab.c.",
 		},
@@ -94,6 +103,7 @@ func TestShutingYardExp(t *testing.T) {
 	}
 
 	for _, tc := range tests {
+		tc := tc
 		t.Run(tc.Input, func(t *testing.T) {
 			t.Parallel()
 			r := parser.ToPostFixExp(tc.Input)

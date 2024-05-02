@@ -1,8 +1,8 @@
-package main
+package search
 
-import "github.com/Luisgustavom1/regex-engine/thompsons-construction/nfa"
+import "github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/nfa"
 
-func search(n nfa.Nfa, word string) {
+func Search(n nfa.Nfa, word string) (match bool) {
 	currentStates := &[]nfa.State{}
 	addNextState(n.Start, currentStates, &[]*nfa.State{})
 
@@ -15,29 +15,33 @@ func search(n nfa.Nfa, word string) {
 				addNextState(nextState, nextStates, &[]*nfa.State{})
 			}
 		}
+
+		currentStates = nextStates
 	}
 
 	for _, state := range *currentStates {
 		if state.IsEnd {
-			println("Match")
-			return
+			match = true
+			return match
 		}
 	}
+
+	return match
 }
 
 func addNextState(state *nfa.State, nextState *[]nfa.State, visited *[]*nfa.State) {
 	if len(state.EpsilonTransitions) > 0 {
 		for _, s := range state.EpsilonTransitions {
-			notVisited := true
+			alreadyVisited := false
 
 			for _, v := range *visited {
 				if s == v {
-					notVisited = false
+					alreadyVisited = true
 					break
 				}
 			}
 
-			if notVisited {
+			if !alreadyVisited {
 				(*visited) = append(*visited, s)
 				addNextState(s, nextState, visited)
 			}

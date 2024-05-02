@@ -1,8 +1,8 @@
 package nfa
 
 import (
-	"github.com/Luisgustavom1/regex-engine/thompsons-construction/parser"
 	"github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/ds"
+	"github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/parser"
 )
 
 type State struct {
@@ -81,12 +81,12 @@ func closure(nfa Nfa) Nfa {
 	s := NewState(false)
 	e := NewState(true)
 
-	addEpsilonTransition(s, nfa.Start)
-	addEpsilonTransition(nfa.End, nfa.Start)
 	addEpsilonTransition(nfa.End, e)
+	addEpsilonTransition(nfa.End, nfa.Start)
 	nfa.End.IsEnd = false
 
 	addEpsilonTransition(s, e)
+	addEpsilonTransition(s, nfa.Start)
 
 	return NewNfa(s, e)
 }
@@ -98,8 +98,7 @@ func ToNfa(postfixExp string) Nfa {
 
 	stack := ds.NewStack[Nfa]()
 
-	for i := 0; i < len(postfixExp); i++ {
-		c := postfixExp[i]
+	for _, c := range postfixExp {
 		if parser.Operators(c) == parser.UNION {
 			s := stack.Pop()
 			e := stack.Pop()
@@ -112,7 +111,7 @@ func ToNfa(postfixExp string) Nfa {
 			e := stack.Pop()
 			stack.Push(union(s, e))
 		} else {
-			stack.Push(FromSymbol(c))
+			stack.Push(FromSymbol(byte(c)))
 		}
 	}
 

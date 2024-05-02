@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/Luisgustavom1/regex-engine/thompsons-construction/nfa"
-	"github.com/Luisgustavom1/regex-engine/thompsons-construction/parser"
+	"github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/nfa"
+	"github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/parser"
+	"github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/search"
 )
 
 func main() {
@@ -12,5 +13,10 @@ func main() {
 	postfixExp := parser.ToPostFixExp(parser.InsertConcatOperator(regex))
 	n := nfa.ToNfa(postfixExp)
 
-	search(n, word)
+	match := search.Search(n, word)
+	if match {
+		println("Match")
+	} else {
+		println("No match")
+	}
 }
