@@ -5,8 +5,8 @@ import "github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/ds"
 type Operators byte
 
 const (
-	CONCAT      Operators = '*'
-	DOT         Operators = '.'
+	CLOSURE     Operators = '*'
+	CONCAT      Operators = '.'
 	ZERO_OR_ONE Operators = '?'
 	ONE_OR_MORE Operators = '+'
 	UNION       Operators = '|'
@@ -17,24 +17,24 @@ const (
 type OperatorPrecedence int
 
 const (
-	Union         OperatorPrecedence = 0
-	Dot                              = 1
-	ZeroOrOne                        = 2
-	Concatenation                    = 2
-	OneOrMore                        = 2
+	Union     OperatorPrecedence = 0
+	Concat                       = 1
+	ZeroOrOne                    = 2
+	Closure                      = 2
+	OneOrMore                    = 2
 )
 
 var symbolPrecedence = map[Operators]OperatorPrecedence{
 	UNION:       Union,
-	DOT:         Dot,
+	CONCAT:      Concat,
 	ZERO_OR_ONE: ZeroOrOne,
-	CONCAT:      Concatenation,
+	CLOSURE:     Closure,
 	ONE_OR_MORE: OneOrMore,
 }
 
 func isSomeOperator(c byte) bool {
 	s := Operators(c)
-	return s == CONCAT || s == DOT || s == ZERO_OR_ONE || s == ONE_OR_MORE || s == UNION || s == LEFT_PAREN || s == RIGHT_PAREN
+	return s == CLOSURE || s == CONCAT || s == ZERO_OR_ONE || s == ONE_OR_MORE || s == UNION || s == LEFT_PAREN || s == RIGHT_PAREN
 }
 
 // abc -> a.b.c
@@ -62,12 +62,11 @@ func InsertConcatOperator(exp string) string {
 	return expParsed
 }
 
-func ShuntingYardExp(exp string) string {
+func ToPostFixExp(exp string) string {
 	result := ""
 	operators := ds.NewStack[Operators]()
 
-	for i := 0; i < len(exp); i++ {
-		c := exp[i]
+	for _, c := range exp {
 		co := Operators(c)
 
 		if co == LEFT_PAREN || co == RIGHT_PAREN {
@@ -84,7 +83,7 @@ func ShuntingYardExp(exp string) string {
 			continue
 		}
 
-		if isSomeOperator(c) {
+		if isSomeOperator(byte(c)) {
 			for operators.Len() > 0 && symbolPrecedence[co] <= symbolPrecedence[operators.Peek()] && operators.Peek() != LEFT_PAREN {
 				result += string(operators.Pop())
 			}

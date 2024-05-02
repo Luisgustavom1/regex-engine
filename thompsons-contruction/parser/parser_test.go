@@ -96,7 +96,7 @@ func TestShutingYardExp(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.Input, func(t *testing.T) {
 			t.Parallel()
-			r := parser.ShuntingYardExp(tc.Input)
+			r := parser.ToPostFixExp(tc.Input)
 			if r != tc.Want {
 				t.Fatalf("want %s, got %s", tc.Want, r)
 			}
