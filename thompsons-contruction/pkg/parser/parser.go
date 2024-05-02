@@ -5,11 +5,13 @@ import "github.com/Luisgustavom1/regex-engine/thompsons-construction/pkg/ds"
 type Operators byte
 
 const (
-	CLOSURE     Operators = '*'
-	CONCAT      Operators = '.'
+	CLOSURE Operators = '*'
+	CONCAT  Operators = '.'
+	UNION   Operators = '|'
+
 	ZERO_OR_ONE Operators = '?'
 	ONE_OR_MORE Operators = '+'
-	UNION       Operators = '|'
+
 	LEFT_PAREN  Operators = '('
 	RIGHT_PAREN Operators = ')'
 )
